@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { Button } from './ui/button'
 import { redirect } from 'next/navigation'
 import { ThemeToggle } from './ThemeToggle'
+import NavLinks from './NavLinks'
+import { ActivitySquare, ShieldCheck, LogOut } from 'lucide-react'
 
 interface TopNavProps {
   isAdmin?: boolean
@@ -20,41 +22,61 @@ export default async function TopNav({ isAdmin = false }: TopNavProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center px-4">
-        <div className="mr-4 flex space-x-6 shrink-0">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold">PC Monitor</span>
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 dark:border-white/5 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-sm">
+      <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
+        
+        {/* Left Side - Brand & Navigation */}
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+              <ActivitySquare className="h-5 w-5" />
+            </div>
+            <span className="font-bold text-lg tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+              PC Monitor
+            </span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link href="/" className="transition-colors hover:text-foreground/80 text-foreground">
-              {isAdmin ? 'Dashboard' : 'My Device'}
-            </Link>
-            {isAdmin && (
-              <Link href="/results" className="transition-colors hover:text-foreground/80 text-foreground/60">
-                Test Results
-              </Link>
-            )}
-          </nav>
+
+          <NavLinks isAdmin={isAdmin} />
         </div>
-        <div className="flex flex-1 items-center justify-end space-x-2">
+
+        {/* Right Side - Actions & Profile */}
+        <div className="flex items-center gap-4">
           <ThemeToggle />
+          
+          <div className="w-px h-6 bg-border/50 hidden sm:block" />
+
           {data.user && (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">{data.user.email}</span>
-                {isAdmin && (
-                  <span className="text-[10px] font-bold bg-foreground text-background px-1.5 py-0.5 rounded-full uppercase tracking-widest">
-                    Admin
-                  </span>
-                )}
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex flex-col items-end">
+                <span className="text-xs font-semibold text-foreground/90">{data.user.email}</span>
+                <div className="flex items-center gap-1 mt-0.5">
+                  {isAdmin ? (
+                    <span className="flex items-center text-[9px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-sm uppercase tracking-widest border border-emerald-500/20">
+                      <ShieldCheck className="w-3 h-3 mr-0.5" /> Admin
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                      Standard User
+                    </span>
+                  )}
+                </div>
               </div>
+              
               <form action={signOut}>
-                <Button variant="ghost" size="sm">Sign out</Button>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="w-9 h-9 rounded-full bg-muted/30 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-colors"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="sr-only">Sign out</span>
+                </Button>
               </form>
             </div>
           )}
         </div>
+        
       </div>
     </header>
   )
