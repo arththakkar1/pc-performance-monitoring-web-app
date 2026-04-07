@@ -22,7 +22,7 @@ export default async function TopNav({ isAdmin = false }: TopNavProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 dark:border-white/5 bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40 shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 dark:border-white/5 bg-background/60 backdrop-blur-xl supports-backdrop-filter:bg-background/40 shadow-sm">
       <div className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
         
         {/* Left Side - Brand & Navigation */}
@@ -31,7 +31,7 @@ export default async function TopNav({ isAdmin = false }: TopNavProps) {
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
               <ActivitySquare className="h-5 w-5" />
             </div>
-            <span className="font-bold text-lg tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <span className="font-bold text-lg tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
               PC Monitor
             </span>
           </Link>
