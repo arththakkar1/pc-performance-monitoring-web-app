@@ -5,36 +5,41 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
-import { Activity, RefreshCw, Play } from "lucide-react"
+import { Activity, RefreshCw, Play, AlertTriangle, CheckCircle, Database, ChevronsUpDown, Check } from "lucide-react"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { cn } from "@/lib/utils"
 
 type PC = { id: string; name: string; last_seen: string; status: string }
-type Log = { id: string; pc_id: string; cpu: number; ram: number; created_at: string }
+type TestResult = { id: string; pc_id: string; cpu: number; ram: number; disk_speed: number; created_at: string }
 
 export default function AdminDashboard({ initialPcs }: { initialPcs: PC[] }) {
   const [pcs, setPcs] = useState<PC[]>(initialPcs)
-  const [logs, setLogs] = useState<Record<string, Log[]>>({})
+  const [testResults, setTestResults] = useState<Record<string, TestResult>>({})
   const [startingAll, setStartingAll] = useState(false)
+  const [selectedClass, setSelectedClass] = useState<string>('All Classes')
+  const [comboboxOpen, setComboboxOpen] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
-    const fetchLogs = async () => {
+    const fetchLatestTests = async () => {
       const { data } = await supabase
-        .from('logs')
+        .from('test_results')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(200)
+        
       if (data) {
-        const grouped = data.reduce((acc, log) => {
-          if (!acc[log.pc_id]) acc[log.pc_id] = []
-          acc[log.pc_id].push(log)
-          return acc
-        }, {} as Record<string, Log[]>)
-        Object.keys(grouped).forEach(k => grouped[k].reverse())
-        setLogs(grouped)
+        const latest: Record<string, TestResult> = {}
+        data.forEach(result => {
+          if (!latest[result.pc_id]) {
+            latest[result.pc_id] = result
+          }
+        })
+        setTestResults(latest)
       }
     }
-    fetchLogs()
+    fetchLatestTests()
 
     const pcSub = supabase.channel('admin-pcs')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pcs' }, (payload) => {
@@ -46,76 +51,134 @@ export default function AdminDashboard({ initialPcs }: { initialPcs: PC[] }) {
         })
       }).subscribe()
 
-    const logSub = supabase.channel('admin-logs')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'logs' }, (payload) => {
-        const newLog = payload.new as Log
-        setLogs(cur => {
-          const pcLogs = cur[newLog.pc_id] ? [...cur[newLog.pc_id], newLog] : [newLog]
-          if (pcLogs.length > 20) pcLogs.shift()
-          return { ...cur, [newLog.pc_id]: pcLogs }
-        })
+    const testSub = supabase.channel('admin-tests')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'test_results' }, (payload) => {
+        const newRes = payload.new as TestResult
+        setTestResults(cur => ({ ...cur, [newRes.pc_id]: newRes }))
       }).subscribe()
 
-    return () => { supabase.removeChannel(pcSub); supabase.removeChannel(logSub) }
+    return () => { supabase.removeChannel(pcSub); supabase.removeChannel(testSub) }
   }, [supabase])
 
   const startTest = async (pcId: string) => {
     await supabase.from('commands').insert({ type: 'START_TEST', target: pcId })
   }
 
+  const isOffline = (lastSeen: string) => new Date().getTime() - new Date(lastSeen).getTime() > 10000
+
+  const getDiagnosis = (cpu?: number, ram?: number) => {
+    if (cpu === undefined || ram === undefined) return { label: 'No Data yet', status: 'unknown', icon: null }
+    if (cpu > 85 || ram > 85) return { label: 'Critical: Needs Diagnosis', status: 'destructive', icon: <AlertTriangle className="inline w-4 h-4 mr-1 text-red-500" /> }
+    if (cpu > 60 || ram > 60) return { label: 'Warning: High Load', status: 'secondary', icon: <AlertTriangle className="inline w-4 h-4 mr-1 text-yellow-500" /> }
+    return { label: 'Healthy', status: 'default', icon: <CheckCircle className="inline w-4 h-4 mr-1 text-emerald-500" /> }
+  }
+
+  // --- Filtering & Class Logic ---
+  const getClassFromId = (id: string) => {
+    if (!id.includes('-')) return 'Unassigned'
+    const parts = id.split('-')
+    if (parts.length >= 2) return parts.slice(0, parts.length - 1).join('-')
+    return 'Unassigned'
+  }
+
+  const uniqueClasses = ['All Classes', ...Array.from(new Set(pcs.map(pc => getClassFromId(pc.id))))].sort()
+  
+  const filteredPcs = selectedClass === 'All Classes' 
+    ? pcs 
+    : pcs.filter(pc => getClassFromId(pc.id) === selectedClass)
+
   const startAllTests = async () => {
     setStartingAll(true)
-    await Promise.all(pcs.map(pc => supabase.from('commands').insert({ type: 'START_TEST', target: pc.id })))
+    await Promise.all(filteredPcs.map(pc => supabase.from('commands').insert({ type: 'START_TEST', target: pc.id })))
     setStartingAll(false)
   }
 
-  const isOffline = (lastSeen: string) =>
-    new Date().getTime() - new Date(lastSeen).getTime() > 10000
+  const onlinePcs = filteredPcs.filter(p => !isOffline(p.last_seen)).length
 
-  const onlinePcs = pcs.filter(p => !isOffline(p.last_seen)).length
+  const summaryHealthy = filteredPcs.filter(pc => getDiagnosis(testResults[pc.id]?.cpu, testResults[pc.id]?.ram).status === 'default').length
+  const summaryWarning = filteredPcs.filter(pc => getDiagnosis(testResults[pc.id]?.cpu, testResults[pc.id]?.ram).status === 'secondary').length
+  const summaryCritical = filteredPcs.filter(pc => getDiagnosis(testResults[pc.id]?.cpu, testResults[pc.id]?.ram).status === 'destructive').length
+  const summaryNoData = filteredPcs.filter(pc => getDiagnosis(testResults[pc.id]?.cpu, testResults[pc.id]?.ram).status === 'unknown').length
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Admin toolbar */}
+      
+      {/* Admin Toolbar & Filter */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={comboboxOpen}
+                className="w-48 justify-between font-normal"
+              >
+                {selectedClass}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-0">
+              <Command>
+                <CommandInput placeholder="Search class..." />
+                <CommandList>
+                  <CommandEmpty>No class found.</CommandEmpty>
+                  <CommandGroup>
+                    {uniqueClasses.map(cls => (
+                      <CommandItem
+                        key={cls}
+                        value={cls}
+                        onSelect={(val) => {
+                          setSelectedClass(uniqueClasses.find((c) => c.toLowerCase() === val) || cls)
+                          setComboboxOpen(false)
+                        }}
+                      >
+                        <Check className={cn("mr-2 h-4 w-4", selectedClass === cls ? "opacity-100" : "opacity-0")} />
+                        {cls}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
           <span className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{pcs.length}</span> devices registered
-            &nbsp;·&nbsp;
-            <span className="font-semibold text-green-500">{onlinePcs}</span> online
+            <span className="font-semibold text-foreground">{filteredPcs.length}</span> devices listed
+            <span className="font-semibold ml-1 text-emerald-500">{onlinePcs}</span> online
           </span>
         </div>
         <Button
           onClick={startAllTests}
-          disabled={startingAll || pcs.length === 0}
+          disabled={startingAll || filteredPcs.length === 0}
           size="sm"
           className="flex items-center gap-2"
         >
-          {startingAll ? (
-            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Play className="w-3.5 h-3.5" />
-          )}
-          {startingAll ? 'Starting…' : 'Start Test on All PCs'}
+          {startingAll ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+          {startingAll ? 'Starting…' : selectedClass === 'All Classes' ? 'Start Test on All PCs' : `Start Test on Class ${selectedClass}`}
         </Button>
       </div>
 
-      {/* PC Grid */}
+      {/* Inspection Triage Summary */}
+      <div className="flex bg-muted/40 border rounded-lg p-3 px-4 text-sm flex-wrap gap-6 items-center justify-between shadow-sm">
+        <div className="font-semibold uppercase tracking-widest text-xs text-muted-foreground mix-blend-luminosity">Class Inspection Summary</div>
+        <div className="flex gap-6 items-center">
+          <span className="flex items-center text-emerald-500 font-medium"><CheckCircle className="w-4 h-4 mr-1.5" /> {summaryHealthy} Healthy</span>
+          <span className="flex items-center text-yellow-500 font-medium"><AlertTriangle className="w-4 h-4 mr-1.5" /> {summaryWarning} Warning</span>
+          <span className="flex items-center text-red-500 font-medium"><AlertTriangle className="w-4 h-4 mr-1.5" /> {summaryCritical} Need Inspection</span>
+          <span className="flex items-center text-muted-foreground font-medium"><Activity className="w-4 h-4 mr-1.5" /> {summaryNoData} Untested</span>
+        </div>
+      </div>
+
+      {/* Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {pcs.map(pc => {
+        {filteredPcs.map(pc => {
           const offline = isOffline(pc.last_seen)
-          const pcLogs = logs[pc.id] || []
-          const currentCpu = pcLogs.length > 0 ? pcLogs[pcLogs.length - 1].cpu : 0
-          const currentRam = pcLogs.length > 0 ? pcLogs[pcLogs.length - 1].ram : 0
-          const chartData = pcLogs.map(l => ({
-            time: new Date(l.created_at).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-            cpu: l.cpu,
-            ram: l.ram,
-          }))
+          const result = testResults[pc.id]
+          const diag = getDiagnosis(result?.cpu, result?.ram)
 
           return (
-            <Card key={pc.id} className="overflow-hidden">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <Card key={pc.id} className="overflow-hidden flex flex-col justify-between">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 bg-muted/40 border-b">
                 <div className="flex flex-col space-y-1">
                   <CardTitle className="text-base font-semibold">{pc.name}</CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">{pc.id}</CardDescription>
@@ -124,46 +187,49 @@ export default function AdminDashboard({ initialPcs }: { initialPcs: PC[] }) {
                   {offline ? 'Offline' : 'Online'}
                 </Badge>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">CPU Usage</span>
-                    <span className="text-2xl font-bold">{currentCpu.toFixed(1)}%</span>
+              
+              <CardContent className="pt-4 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">Performance Diagnosis</p>
+                    <div className="flex items-center bg-card border rounded-md px-3 py-2 text-sm font-medium">
+                      {diag.icon} {diag.label}
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">RAM Usage</span>
-                    <span className="text-2xl font-bold">{currentRam.toFixed(1)}GB</span>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">CPU Test Load</span>
+                      <span className="text-xl font-bold">{result ? `${result.cpu.toFixed(1)}%` : '--'}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">RAM Allocation</span>
+                      <span className="text-xl font-bold">{result ? `${result.ram.toFixed(1)}GB` : '--'}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col bg-muted/20 p-2 rounded-md mb-4 border border-border/50">
+                     <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider flex items-center mb-1"><Database className="w-3 h-3 mr-1"/> Last Disk Scan Speed</span>
+                     <span className="text-sm font-bold">{result ? `${result.disk_speed.toFixed(1)} MB/s` : '--'}</span>
                   </div>
                 </div>
-                <div className="h-[150px] w-full mt-4 -ml-4">
-                  <ResponsiveContainer width="100%" height="100%" minHeight={0} minWidth={0}>
-                    <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="time" hide />
-                      <YAxis hide domain={[0, 100]} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
-                        itemStyle={{ color: 'hsl(var(--foreground))' }}
-                      />
-                      <Line type="monotone" dataKey="cpu" stroke="#10b981" strokeWidth={2} dot={false} isAnimationActive={false} />
-                      <Line type="monotone" dataKey="ram" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="mt-4">
-                  <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => startTest(pc.id)}>
+
+                <div className="mt-2">
+                  <Button size="sm" variant={result ? "outline" : "default"} className="w-full text-xs box-border" onClick={() => startTest(pc.id)}>
                     <Activity className="w-3 h-3 mr-2" />
-                    Start Test
+                    {result ? 'Run Diagnostics Again' : 'Start Initial Diagnosis'}
                   </Button>
+                  {result && <p className="text-[10px] text-center mt-2 text-muted-foreground">Tested at: {new Date(result.created_at).toLocaleTimeString()}</p>}
                 </div>
               </CardContent>
             </Card>
           )
         })}
 
-        {pcs.length === 0 && (
+        {filteredPcs.length === 0 && (
           <div className="col-span-full py-12 flex flex-col items-center justify-center text-muted-foreground border border-dashed rounded-lg">
             <RefreshCw className="w-8 h-8 mb-4 animate-spin opacity-20" />
-            <p>Waiting for agents to connect…</p>
+            <p>No devices found in {selectedClass}</p>
           </div>
         )}
       </div>
