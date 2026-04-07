@@ -29,7 +29,13 @@ export default async function TopNav({ isAdmin = false }: TopNavProps) {
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-              <ActivitySquare className="h-5 w-5" />
+              <div className="w-9 h-9 bg-black dark:bg-white rounded-lg flex items-center justify-center shrink-0 p-2 transition-colors">
+            <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-white dark:text-black">
+              <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+              <path d="M8 21h8M12 17v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M7 7h2v6H7zM11 9h2v4h-2zM15 6h2v7h-2z" fill="currentColor"/>
+            </svg>
+          </div>
             </div>
             <span className="font-bold text-lg tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
               PC Monitor
