@@ -134,7 +134,7 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
             </div>
           ) : (
             <div className="h-56 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={0} minWidth={0}>
                 <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="time" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />

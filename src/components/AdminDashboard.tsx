@@ -136,7 +136,7 @@ export default function AdminDashboard({ initialPcs }: { initialPcs: PC[] }) {
                   </div>
                 </div>
                 <div className="h-[150px] w-full mt-4 -ml-4">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minHeight={0} minWidth={0}>
                     <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                       <XAxis dataKey="time" hide />
                       <YAxis hide domain={[0, 100]} />
