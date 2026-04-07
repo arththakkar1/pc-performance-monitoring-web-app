@@ -27,7 +27,7 @@ export default async function ResultsPage() {
 
   return (
     <>
-      <TopNav />
+      <TopNav isAdmin={true} />
       <main className="flex-1 p-6 md:p-8">
         <div className="flex flex-col gap-8 max-w-screen-2xl mx-auto">
           <div className="space-y-1">
