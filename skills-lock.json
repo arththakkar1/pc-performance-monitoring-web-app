@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "skills": {
+    "ckm:ui-styling": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "9ae38e4e201f338b6150e462b98a2db0f2ae7c180c77e8cfb1d33eba9d33bf33"
+    },
+    "eslint-rules": {
+      "source": "thebushidocollective/han",
+      "sourceType": "github",
+      "computedHash": "49d43facac9d8ca8b0e265677aa0920d6e6cf1b4adad1a741951164e37cffe45"
+    },
+    "next-cache-components": {
+      "source": "vercel-labs/next-skills",
+      "sourceType": "github",
+      "computedHash": "f835d8226c28abf012cc013928e2627c8a7a046de61127ef229be1711bd1f255"
+    },
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "cb675a889c60172febe84740e7c22b600c8241c390deaff3d368c408f10dffdf"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "f4cd7570115d97af6bcb2946eb891a958c8d04a43b479871c9ccadbc670ad058"
+    }
+  }
+}

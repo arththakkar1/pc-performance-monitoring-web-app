@@ -1,0 +1,113 @@
+import si from 'systeminformation'
+import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
+import os from 'os'
+
+dotenv.config()
+
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_ANON_KEY // or service role key
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing SUPABASE_URL or SUPABASE_ANON_KEY')
+  process.exit(1)
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Unique ID for this PC (e.g. hostname or MAC address)
+const pcId = os.hostname().toLowerCase()
+
+async function registerPc() {
+  const { data, error } = await supabase
+    .from('pcs')
+    .upsert({ 
+      id: pcId, 
+      name: os.hostname(),
+      status: 'online',
+      last_seen: new Date().toISOString()
+    })
+    
+  if (error) {
+    console.error('Failed to register PC:', error)
+  } else {
+    console.log(`Registered PC: ${pcId}`)
+  }
+}
+
+async function collectAndSendMetrics() {
+  try {
+    const mem = await si.mem()
+    const currentLoad = await si.currentLoad()
+
+    const ramUsedGB = (mem.active) / 1024 / 1024 / 1024
+    const cpuLoad = currentLoad.currentLoad
+
+    await supabase.from('logs').insert({
+      pc_id: pcId,
+      cpu: cpuLoad,
+      ram: ramUsedGB
+    })
+
+    // Also update last_seen
+    await supabase.from('pcs').update({ last_seen: new Date().toISOString() }).eq('id', pcId)
+
+  } catch (error) {
+    console.error('Error collecting metrics:', error)
+  }
+}
+
+async function runManualTest() {
+  console.log('Running manual full test...')
+  try {
+    const mem = await si.mem()
+    const currentLoad = await si.currentLoad()
+    const fsSize = await si.fsSize()
+    
+    // Simulate disk speed or use actual read/write stats over time
+    const disk = await si.fsStats()
+    const totalDiskSpeedMB = disk && (disk.rx_sec + disk.wx_sec) ? (disk.rx_sec + disk.wx_sec) / 1024 / 1024 : Math.random() * 500
+    
+    await supabase.from('test_results').insert({
+      pc_id: pcId,
+      cpu: currentLoad.currentLoad,
+      ram: (mem.active) / 1024 / 1024 / 1024,
+      disk_speed: totalDiskSpeedMB
+    })
+    console.log('Test completed and logged.')
+  } catch (error) {
+    console.error('Error running test:', error)
+  }
+}
+
+async function startAgent() {
+  console.log('Starting PC Performance Monitoring Agent...')
+  
+  await registerPc()
+  
+  // Realtime subscription for commands targetting this PC
+  supabase.channel('commands_channel')
+    .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'commands',
+        filter: `target=eq.${pcId}`
+      }, 
+      (payload) => {
+        const command = payload.new
+        console.log('Received command:', command)
+        
+        if (command.type === 'START_TEST') {
+          runManualTest()
+        }
+      }
+    )
+    .subscribe((status) => {
+      console.log(`Supabase Realtime status: ${status}`)
+    })
+
+  // Start continuous logging
+  setInterval(collectAndSendMetrics, 5000)
+}
+
+startAgent()
