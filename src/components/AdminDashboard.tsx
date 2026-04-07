@@ -68,9 +68,9 @@ export default function AdminDashboard({ initialPcs }: { initialPcs: PC[] }) {
 
   const getDiagnosis = (cpu?: number, ram?: number) => {
     if (cpu === undefined || ram === undefined) return { label: 'No Data yet', status: 'unknown', icon: null }
-    if (cpu > 85 || ram > 85) return { label: 'Critical: Needs Diagnosis', status: 'destructive', icon: <AlertTriangle className="inline w-4 h-4 mr-1 text-red-500" /> }
-    if (cpu > 60 || ram > 60) return { label: 'Warning: High Load', status: 'secondary', icon: <AlertTriangle className="inline w-4 h-4 mr-1 text-yellow-500" /> }
-    return { label: 'Healthy', status: 'default', icon: <CheckCircle className="inline w-4 h-4 mr-1 text-emerald-500" /> }
+    if (cpu > 85 || ram > 85) return { label: 'Critical: Needs Diagnosis', status: 'destructive', icon: <AlertTriangle className="inline w-3.5 h-3.5 mr-1" /> }
+    if (cpu > 60 || ram > 60) return { label: 'Warning: High Load', status: 'secondary', icon: <AlertTriangle className="inline w-3.5 h-3.5 mr-1" /> }
+    return { label: 'Healthy', status: 'default', icon: <CheckCircle className="inline w-3.5 h-3.5 mr-1" /> }
   }
 
   // --- Filtering & Class Logic ---
@@ -177,49 +177,62 @@ export default function AdminDashboard({ initialPcs }: { initialPcs: PC[] }) {
           const diag = getDiagnosis(result?.cpu, result?.ram)
 
           return (
-            <Card key={pc.id} className="overflow-hidden flex flex-col justify-between">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 bg-muted/40 border-b">
-                <div className="flex flex-col space-y-1">
-                  <CardTitle className="text-base font-semibold">{pc.name}</CardTitle>
-                  <CardDescription className="text-xs text-muted-foreground">{pc.id}</CardDescription>
+            <Card key={pc.id} className="flex flex-col justify-between shadow-sm">
+              <CardHeader className="flex flex-row items-start justify-between pb-4 bg-muted/20 border-b">
+                <div className="space-y-1">
+                  <CardTitle className="text-sm font-semibold">{pc.name}</CardTitle>
+                  <CardDescription className="text-xs font-mono text-muted-foreground">{pc.id}</CardDescription>
                 </div>
-                <Badge variant={offline ? "destructive" : "default"} className={!offline ? "bg-emerald-500 hover:bg-emerald-600" : ""}>
+                <Badge variant={offline ? "destructive" : "secondary"} className={cn("font-medium", !offline && "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 border-emerald-500/20")}>
                   {offline ? 'Offline' : 'Online'}
                 </Badge>
               </CardHeader>
               
-              <CardContent className="pt-4 flex-1 flex flex-col justify-between">
+              <CardContent className="pt-4 flex-1 flex flex-col justify-between space-y-4">
                 <div>
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">Performance Diagnosis</p>
-                    <div className="flex items-center bg-card border rounded-md px-3 py-2 text-sm font-medium">
-                      {diag.icon} {diag.label}
-                    </div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Health Status</span>
+                    <span className={cn(
+                      "text-[11px] font-semibold px-2 py-1 rounded-md border flex items-center",
+                      diag.status === 'default' ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" :
+                      diag.status === 'secondary' ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20" :
+                      diag.status === 'destructive' ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20" :
+                      "bg-muted text-muted-foreground border-border"
+                    )}>
+                      {diag.icon} {diag.label === 'No Data yet' ? 'Pending' : diag.label}
+                    </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">CPU Test Load</span>
-                      <span className="text-xl font-bold">{result ? `${result.cpu.toFixed(1)}%` : '--'}</span>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="flex flex-col p-3 rounded-md bg-muted/40 border">
+                      <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider mb-1">CPU Load</span>
+                      <span className="text-lg font-bold">{result ? `${result.cpu.toFixed(1)}%` : '--'}</span>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider">RAM Allocation</span>
-                      <span className="text-xl font-bold">{result ? `${result.ram.toFixed(1)}GB` : '--'}</span>
+                    <div className="flex flex-col p-3 rounded-md bg-muted/40 border">
+                      <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider mb-1">RAM Alloc</span>
+                      <span className="text-lg font-bold">{result ? `${result.ram.toFixed(1)}GB` : '--'}</span>
                     </div>
                   </div>
                   
-                  <div className="flex flex-col bg-muted/20 p-2 rounded-md mb-4 border border-border/50">
-                     <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider flex items-center mb-1"><Database className="w-3 h-3 mr-1"/> Last Disk Scan Speed</span>
-                     <span className="text-sm font-bold">{result ? `${result.disk_speed.toFixed(1)} MB/s` : '--'}</span>
+                  <div className="flex items-center justify-between p-3 rounded-md border bg-muted/10">
+                    <span className="text-[10px] uppercase text-muted-foreground font-semibold tracking-wider flex items-center">
+                      <Database className="w-3 h-3 mr-1.5 opacity-70"/> Disk Speed
+                    </span>
+                    <span className="text-sm font-semibold">{result ? `${result.disk_speed.toFixed(1)} MB/s` : '--'}</span>
                   </div>
                 </div>
 
-                <div className="mt-2">
-                  <Button size="sm" variant={result ? "outline" : "default"} className="w-full text-xs box-border" onClick={() => startTest(pc.id)}>
-                    <Activity className="w-3 h-3 mr-2" />
-                    {result ? 'Run Diagnostics Again' : 'Start Initial Diagnosis'}
+                <div className="mt-2 text-center">
+                  <Button 
+                    size="sm" 
+                    variant={result ? "outline" : "default"}
+                    className="w-full text-xs font-medium shadow-xs" 
+                    onClick={() => startTest(pc.id)}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 mr-2 opacity-70" />
+                    {result ? 'Retest Diagnostics' : 'Start Initial Diagnosis'}
                   </Button>
-                  {result && <p className="text-[10px] text-center mt-2 text-muted-foreground">Tested at: {new Date(result.created_at).toLocaleTimeString()}</p>}
+                  {result && <p className="text-[10px] text-muted-foreground mt-3 font-medium">Last test: {new Date(result.created_at).toLocaleTimeString()}</p>}
                 </div>
               </CardContent>
             </Card>
