@@ -2,6 +2,8 @@
 CREATE TABLE IF NOT EXISTS public.pcs (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
+    device_name TEXT UNIQUE,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     last_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     status TEXT DEFAULT 'online'
 );

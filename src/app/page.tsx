@@ -48,7 +48,7 @@ export default async function Home() {
     const { data } = await supabase
       .from('pcs')
       .select('*')
-      .eq('name', deviceId)
+      .eq('id', deviceId)
       .maybeSingle()
     pc = data
   }

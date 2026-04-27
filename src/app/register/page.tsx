@@ -33,12 +33,12 @@ export default async function RegisterPage(props: { searchParams: Promise<{ erro
     // Immediately reserve the device ID in the pcs table so it shows up for the admin
     // and correctly reserves the auto-increment number.
     if (deviceId) {
-      await supabase.from('pcs').insert({
+      await supabase.from('pcs').upsert({
         id: deviceId,
         name: deviceId,
         status: 'offline',
         last_seen: new Date(0).toISOString() // Epoch time so it immediately shows as offline
-      })
+      }, { onConflict: 'id' })
     }
 
     redirect('/')
