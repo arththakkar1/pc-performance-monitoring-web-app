@@ -1,37 +1,70 @@
 # PC Performance Monitoring System
 
-**Note: This project is currently a Work In Progress (WIP).**
+A centralized hardware performance monitoring platform and diagnostic dashboard. This system provides real-time hardware telemetry and historical analytics through a high-contrast, demand-driven architecture.
 
-## Overview
+## Primary Features
 
-The PC Performance Monitoring System is a full-stack application designed to track, visualize, and manage computer performance metrics in real-time. It consists of a web-based dashboard and a client-side agent, offering secure access, data visualization, and remote administrative controls.
+### Demand-Driven Monitoring
+The application utilizes a local-first monitoring model that eliminates persistent background network traffic. Hardware metrics are retrieved on-demand by the client interface, significantly reducing server overhead and local resource consumption.
 
-## Architecture
+### Local Telemetry Dashboard
+Real-time metrics for central processing units (CPU) and random-access memory (RAM) are fetched directly from the host system. This data is displayed locally to provide immediate feedback without unnecessary database persistence.
 
-The system is built on a modern technology stack separated into three primary components:
+### Administrative Diagnostics
+Administrators possess the authorization to trigger full system diagnostic tests across the registered device fleet. These tests include disk input/output performance measurements and are persisted to the database for long-term reporting.
 
-*   **Frontend Web Application:** Built with Next.js 14. It provides the user interface for authentication, device management, and real-time data visualization using Recharts.
-*   **Backend & Database:** Powered by Supabase, handling PostgreSQL database operations, role-based authentication, and real-time data synchronization.
-*   **Client Agent:** A Node.js-based telemetry agent that runs directly on the target machines to gather local hardware metrics.
+### Historical Performance Analytics
+The platform provides comprehensive visualization of performance trends. Charts are engineered to be theme-aware, utilizing dynamic color resolution to maintain legibility across both light and dark system color schemes.
 
-## System Workflow
+### Activity Logging and Auditing
+A dedicated history component provides searchable and filterable access to all previous diagnostic results and continuous telemetry logs. Data is organized by device classification and temporal ranges.
 
-The end-to-end workflow of the monitoring system is structured as follows:
+## Technical Specification
 
-### 1. Agent Initialization and Telemetry Collection
-The Node.js agent is deployed and executed on the host machine. It continuously interfaces with the local operating system to gather critical performance indicators, specifically central processing unit (CPU) utilization and random access memory (RAM) consumption.
+- **Core Framework**: Next.js 16 (App Router)
+- **Data Architecture**: Supabase (PostgreSQL, Authentication, Realtime)
+- **Visualization**: Recharts (Dynamic SVG Rendering)
+- **Typography and UI**: High-contrast monochromatic design system
 
-### 2. Device Registration and Authentication
-Users access the Next.js web application to authenticate their accounts. Devices running the agent generate specific identifiers to securely register themselves within the Supabase backend. The platform enforces role-based access control (RBAC), distinguishing between standard users and system administrators. 
+## Operational Architecture
 
-### 3. Real-Time Data Ingestion
-Once registered and authorized, the client agent begins securely transmitting the collected hardware metrics to the Supabase backend at defined intervals. This data rests in the PostgreSQL database and utilizes Supabase's real-time capabilities for immediate broadcast to connected web clients.
+The system operates on a client-driven synchronization model:
+1. **Host Discovery**: Devices are uniquely identified and registered within the Supabase ecosystem.
+2. **On-Demand Retrieval**: The user interface invokes server actions to gather system-level metrics via the `systeminformation` library.
+3. **Persistence Logic**: Database write operations are reserved for formal diagnostic events and administrator-requested sessions.
+4. **Theme Synchronization**: UI components utilize CSS variables and hook-based theme detection for consistent visual fidelity.
 
-### 4. Data Visualization and Monitoring
-The Next.js frontend subscribes to the telemetry data streams. For standard users, the application filters the incoming data to display only the metrics associated with their personal devices. This data is rendered into interactive graphs, allowing users to monitor their hardware stability over time.
+## Deployment and Installation
 
-### 5. Administrative Operations
-Accounts with elevated administrative privileges have access to a global oversight dashboard. Administrators can view the performance metrics of all connected devices across the entire system. Furthermore, administrators have the capability to dispatch remote commands back to particular client agents, such as executing specific performance tests across the network.
+### Prerequisites
+- Node.js runtime environment (LTS version)
+- Active Supabase project instance
 
-## Setup Instructions
-*(Detailed setup and deployment instructions for Next.js, Supabase, and the Node.js agent will be added in future updates.)*
+### Configuration
+A `.env` file must be provisioned in the root directory with the following parameters:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_key
+NEXT_RUNTIME=nodejs
+```
+
+### Initialization
+```bash
+npm install
+npm run dev
+```
+
+## System Workflows
+
+### Standard User Procedures
+- Device registration and configuration.
+- Real-time local metric monitoring.
+- Personal diagnostic history review and analytics.
+
+### Administrator Procedures
+- Global device fleet oversight.
+- Execution of remote diagnostic protocols.
+- Comparative system analytics across the infrastructure.
+
+## License
+MIT License
