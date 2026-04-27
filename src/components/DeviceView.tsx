@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTheme } from "next-themes"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card"
 import { Badge } from "./ui/badge"
@@ -23,6 +24,8 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
   const [logs, setLogs] = useState<Log[]>([])
   const [liveMetrics, setLiveMetrics] = useState<{ cpu: number, ram: number } | null>(null)
   const [loading, setLoading] = useState(false)
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === 'dark'
   const supabase = createClient()
 
   // --- Manual Refresh (Local Only, No DB) ---
@@ -210,15 +213,15 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
             <CardContent className="h-[300px] mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} />
                 <XAxis dataKey="time" hide />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
+                <YAxis stroke={isDark ? '#a1a1aa' : '#71717a'} fontSize={10} tickLine={false} axisLine={false} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
-                  itemStyle={{ fontSize: '10px', color: 'hsl(var(--foreground))' }}
+                  contentStyle={{ backgroundColor: isDark ? '#000' : '#fff', border: `1px solid ${isDark ? '#27272a' : '#e4e4e7'}`, borderRadius: '8px' }}
+                  itemStyle={{ fontSize: '10px', color: isDark ? '#fff' : '#000' }}
                 />
-                <Line type="monotone" dataKey="cpu" stroke="hsl(var(--foreground))" strokeWidth={3} dot={false} name="CPU %" />
-                <Line type="monotone" dataKey="ram" stroke="hsl(var(--muted-foreground))" strokeWidth={2} strokeDasharray="5 5" dot={false} name="RAM GB" />
+                <Line type="monotone" dataKey="cpu" stroke={isDark ? '#fff' : '#000'} strokeWidth={3} dot={false} name="CPU %" />
+                <Line type="monotone" dataKey="ram" stroke={isDark ? '#a1a1aa' : '#71717a'} strokeWidth={2} strokeDasharray="5 5" dot={false} name="RAM GB" />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
