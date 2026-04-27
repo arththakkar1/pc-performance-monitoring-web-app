@@ -5,7 +5,10 @@ import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card"
 import { Badge } from "./ui/badge"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
-import { Monitor, RefreshCw } from "lucide-react"
+import { Monitor, RefreshCw, Zap, Cpu, HardDrive } from "lucide-react"
+import { getLiveMetrics, runManualTest } from "@/lib/actions/agent"
+import { Button } from "./ui/button"
+import { cn } from "@/lib/utils"
 
 type PC = { id: string; name: string; last_seen: string; status: string }
 type Log = { id: string; pc_id: string; cpu: number; ram: number; created_at: string }
@@ -18,12 +21,30 @@ interface DeviceViewProps {
 export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps) {
   const [pc, setPc] = useState<PC | null>(initialPc)
   const [logs, setLogs] = useState<Log[]>([])
+  const [liveMetrics, setLiveMetrics] = useState<{ cpu: number, ram: number } | null>(null)
+  const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
+  // --- Manual Refresh (Local Only, No DB) ---
+  const refreshLocalMetrics = async () => {
+    setLoading(true)
+    const data = await getLiveMetrics()
+    if (data && !('error' in data)) {
+      setLiveMetrics({ cpu: data.cpu, ram: data.ram })
+    }
+    setLoading(false)
+  }
+
+  // Initial local fetch
+  useEffect(() => {
+    refreshLocalMetrics()
+  }, [])
+
+  // --- Realtime Subscriptions ---
   useEffect(() => {
     if (!pc) return
 
-    // Fetch recent logs for this PC
+    // Fetch recent logs from DB (history)
     const fetchLogs = async () => {
       const { data } = await supabase
         .from('logs')
@@ -41,7 +62,7 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
         setPc(payload.new as PC)
       }).subscribe()
 
-    // Realtime: new logs
+    // Realtime: new logs (from DB saves)
     const logSub = supabase.channel(`device-logs-${pc.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'logs', filter: `pc_id=eq.${pc.id}` }, (payload) => {
         const newLog = payload.new as Log
@@ -52,14 +73,32 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
         })
       }).subscribe()
 
-    return () => { supabase.removeChannel(pcSub); supabase.removeChannel(logSub) }
+    // Realtime: handle Admin commands (SAVES to DB)
+    const cmdSub = supabase.channel(`device-cmds-${pc.id}`)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'commands', 
+        filter: `target=eq.${pc.id}` 
+      }, (payload) => {
+        console.log('Received ADMIN command:', payload.new)
+        if (payload.new.type === 'START_TEST') {
+          runManualTest()
+        }
+      }).subscribe()
+
+    return () => { 
+      supabase.removeChannel(pcSub)
+      supabase.removeChannel(logSub)
+      supabase.removeChannel(cmdSub)
+    }
   }, [pc, supabase])
 
   const isOffline = (lastSeen: string) =>
     new Date().getTime() - new Date(lastSeen).getTime() > 10000
 
-  const currentCpu = logs.length > 0 ? logs[logs.length - 1].cpu : 0
-  const currentRam = logs.length > 0 ? logs[logs.length - 1].ram : 0
+  const currentCpu = liveMetrics?.cpu ?? (logs.length > 0 ? logs[logs.length - 1].cpu : 0)
+  const currentRam = liveMetrics?.ram ?? (logs.length > 0 ? logs[logs.length - 1].ram : 0)
   const chartData = logs.map(l => ({
     time: new Date(l.created_at).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
     cpu: l.cpu,
@@ -88,34 +127,62 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
     <div className="flex flex-col gap-6 max-w-2xl mx-auto">
       {/* Device header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="space-y-1">
           <h2 className="text-2xl font-bold tracking-tight">{pc.name}</h2>
-          <p className="text-sm text-muted-foreground font-mono">{pc.id}</p>
+          <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+            <span>ID: {pc.id}</span>
+            <span className="w-1 h-1 bg-muted-foreground rounded-full" />
+            <span className="flex items-center gap-1"><Cpu className="w-3 h-3" /> Hardware Monitoring</span>
+          </div>
         </div>
-        <Badge
-          variant={offline ? "destructive" : "default"}
-          className={`text-sm px-3 py-1 ${!offline ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}
-        >
-          {offline ? 'Offline' : 'Online'}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={refreshLocalMetrics} 
+            disabled={loading}
+            className="h-8 gap-2 text-xs border-dashed"
+          >
+            <RefreshCw className={cn("w-3 h-3", loading && "animate-spin")} />
+            Refresh Local
+          </Button>
+          <Badge
+            variant={offline ? "destructive" : "default"}
+            className={`text-sm px-3 py-1 ${!offline ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}
+          >
+            {offline ? 'Offline' : 'Online'}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Local Data Notice */}
+      <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-3 text-xs text-amber-600 dark:text-amber-400">
+        <Zap className="w-4 h-4 shrink-0" />
+        <p>
+          Viewing <strong>local hardware metrics</strong>. Data is only saved to the cloud history when an admin triggers a full diagnostic test.
+        </p>
       </div>
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 gap-4">
-        <Card>
+        <Card className="border-emerald-500/20 bg-emerald-500/2">
           <CardHeader className="pb-1">
-            <CardDescription className="text-xs uppercase tracking-wider font-semibold">CPU Usage</CardDescription>
+            <CardDescription className="text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 text-emerald-600/80">
+              <Cpu className="w-3 h-3" /> Live CPU Load
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold">{currentCpu.toFixed(1)}<span className="text-xl font-normal text-muted-foreground">%</span></p>
+            <p className="text-4xl font-black">{currentCpu.toFixed(1)}<span className="text-xl font-medium opacity-50">%</span></p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-blue-500/20 bg-blue-500/2">
           <CardHeader className="pb-1">
-            <CardDescription className="text-xs uppercase tracking-wider font-semibold">RAM Usage</CardDescription>
+            <CardDescription className="text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 text-blue-600/80">
+              <HardDrive className="w-3 h-3" /> Live RAM Usage
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold">{currentRam.toFixed(1)}<span className="text-xl font-normal text-muted-foreground">GB</span></p>
+            <p className="text-4xl font-black">{currentRam.toFixed(1)}<span className="text-xl font-medium opacity-50">GB</span></p>
           </CardContent>
         </Card>
       </div>
