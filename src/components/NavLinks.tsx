@@ -18,7 +18,27 @@ export default function NavLinks({ isAdmin }: { isAdmin: boolean }) {
         )}
       >
          <LayoutDashboard className="w-4 h-4" />
-        {isAdmin ? 'Dashboard' : 'My Device'}
+        Home
+      </Link>
+      <Link 
+        href="/analytics" 
+        className={cn(
+          "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-all hover:bg-background hover:shadow-sm hover:text-foreground",
+          pathname === "/analytics" ? "bg-background shadow-sm text-foreground" : "text-foreground/70"
+        )}
+      >
+         <LayoutDashboard className="w-4 h-4" />
+        {isAdmin ? 'Global Analytics' : 'Analytics'}
+      </Link>
+      <Link 
+        href="/history" 
+        className={cn(
+          "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-all hover:bg-background hover:shadow-sm hover:text-foreground",
+          pathname === "/history" ? "bg-background shadow-sm text-foreground" : "text-foreground/70"
+        )}
+      >
+         <LayoutDashboard className="w-4 h-4" />
+        History
       </Link>
       {isAdmin && (
         <Link 
@@ -29,7 +49,7 @@ export default function NavLinks({ isAdmin }: { isAdmin: boolean }) {
           )}
         >
           <SearchCode className="w-4 h-4" />
-          Test Results
+          Live Results
         </Link>
       )}
     </nav>

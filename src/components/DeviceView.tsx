@@ -97,10 +97,17 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
   const isOffline = (lastSeen: string) =>
     new Date().getTime() - new Date(lastSeen).getTime() > 10000
 
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const currentCpu = liveMetrics?.cpu ?? (logs.length > 0 ? logs[logs.length - 1].cpu : 0)
   const currentRam = liveMetrics?.ram ?? (logs.length > 0 ? logs[logs.length - 1].ram : 0)
   const chartData = logs.map(l => ({
-    time: new Date(l.created_at).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    time: isMounted 
+      ? new Date(l.created_at).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      : '',
     cpu: l.cpu,
     ram: l.ram,
   }))
