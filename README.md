@@ -4,20 +4,21 @@ A centralized hardware performance monitoring platform and diagnostic dashboard.
 
 ## Primary Features
 
-### 🚀 Demand-Driven Monitoring
+### Demand-Driven Monitoring
 The application utilizes a local-first monitoring model that eliminates persistent background network traffic. Hardware metrics are retrieved on-demand by the client interface, significantly reducing server overhead and local resource consumption.
 
-### 📊 Local Telemetry Dashboard
+### Local Telemetry Dashboard
 Real-time metrics for CPU and RAM are fetched directly from the host system via `systeminformation`. This data is displayed locally to provide immediate feedback without unnecessary database persistence.
 
-### 🛡️ Administrative Diagnostics
+### Administrative Diagnostics
 Administrators possess the authorization to trigger full system diagnostic tests across the registered device fleet. These tests include disk I/O performance measurements and are persisted to the database for long-term reporting.
 
-### 📈 Historical Performance Analytics
+### Historical Performance Analytics
 The platform provides comprehensive visualization of performance trends using Recharts. Charts are theme-aware, utilizing dynamic color resolution to maintain legibility across both light and dark system color schemes.
 
-### 📜 Activity Logging and Auditing
+### Activity Logging and Auditing
 A dedicated history component provides searchable and filterable access to all previous diagnostic results and continuous telemetry logs, organized by device and time range.
+
 
 ## System Architecture & Workflow
 
