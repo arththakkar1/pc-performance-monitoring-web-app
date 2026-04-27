@@ -154,8 +154,8 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
             Refresh Local
           </Button>
           <Badge
-            variant={offline ? "destructive" : "default"}
-            className={`text-sm px-3 py-1 ${!offline ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}
+            variant={offline ? "outline" : "default"}
+            className={`text-sm px-3 py-1 ${!offline ? "bg-foreground text-background hover:bg-foreground/90" : "opacity-50"}`}
           >
             {offline ? 'Offline' : 'Online'}
           </Badge>
@@ -163,7 +163,7 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
       </div>
 
       {/* Local Data Notice */}
-      <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-3 text-xs text-amber-600 dark:text-amber-400">
+      <div className="bg-foreground/5 border border-foreground/10 rounded-lg p-3 flex items-center gap-3 text-xs text-foreground/80">
         <Zap className="w-4 h-4 shrink-0" />
         <p>
           Viewing <strong>local hardware metrics</strong>. Data is only saved to the cloud history when an admin triggers a full diagnostic test.
@@ -172,24 +172,24 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 gap-4">
-        <Card className="border-emerald-500/20 bg-emerald-500/2">
-          <CardHeader className="pb-1">
-            <CardDescription className="text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 text-emerald-600/80">
+        <Card className="border-foreground/10 bg-muted/10 shadow-none">
+          <CardHeader className="pb-1 text-center">
+            <CardDescription className="text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 opacity-60">
               <Cpu className="w-3 h-3" /> Live CPU Load
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-black">{currentCpu.toFixed(1)}<span className="text-xl font-medium opacity-50">%</span></p>
+          <CardContent className="text-center">
+            <p className="text-4xl font-black tracking-tighter">{currentCpu.toFixed(1)}<span className="text-xl font-medium opacity-30">%</span></p>
           </CardContent>
         </Card>
-        <Card className="border-blue-500/20 bg-blue-500/2">
-          <CardHeader className="pb-1">
-            <CardDescription className="text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 text-blue-600/80">
+        <Card className="border-foreground/10 bg-muted/10 shadow-none">
+          <CardHeader className="pb-1 text-center">
+            <CardDescription className="text-[10px] uppercase tracking-widest font-bold flex items-center justify-center gap-1.5 opacity-60">
               <HardDrive className="w-3 h-3" /> Live RAM Usage
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <p className="text-4xl font-black">{currentRam.toFixed(1)}<span className="text-xl font-medium opacity-50">GB</span></p>
+          <CardContent className="text-center">
+            <p className="text-4xl font-black tracking-tighter">{currentRam.toFixed(1)}<span className="text-xl font-medium opacity-30">GB</span></p>
           </CardContent>
         </Card>
       </div>
@@ -207,21 +207,21 @@ export default function DeviceView({ pc: initialPc, deviceId }: DeviceViewProps)
               <span className="text-sm">Waiting for data…</span>
             </div>
           ) : (
-            <div className="h-56 w-full">
-              <ResponsiveContainer width="100%" height="100%" minHeight={0} minWidth={0}>
-                <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="time" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-                  <YAxis hide domain={[0, 100]} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
-                    itemStyle={{ color: 'hsl(var(--foreground))' }}
-                  />
-                  <Line type="monotone" dataKey="cpu" stroke="#10b981" strokeWidth={2} dot={false} isAnimationActive={false} name="CPU %" />
-                  <Line type="monotone" dataKey="ram" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={false} name="RAM GB" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <CardContent className="h-[300px] mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                <XAxis dataKey="time" hide />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                  itemStyle={{ fontSize: '10px', color: 'hsl(var(--foreground))' }}
+                />
+                <Line type="monotone" dataKey="cpu" stroke="hsl(var(--foreground))" strokeWidth={3} dot={false} name="CPU %" />
+                <Line type="monotone" dataKey="ram" stroke="hsl(var(--muted-foreground))" strokeWidth={2} strokeDasharray="5 5" dot={false} name="RAM GB" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
           )}
           {/* Legend */}
           <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">

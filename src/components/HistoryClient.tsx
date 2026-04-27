@@ -109,36 +109,30 @@ export default function HistoryClient({ testResults, logs, isAdmin }: HistoryCli
               </div>
             ) : (
               filteredTests.map((test) => (
-                <Card key={test.id} className="overflow-hidden">
-                  <div className="flex items-center justify-between p-4 bg-muted/20 border-b">
+                <Card key={test.id} className="overflow-hidden border-foreground/5 shadow-none group">
+                  <div className="flex items-center justify-between p-4 bg-muted/10 border-b border-foreground/5 transition-colors group-hover:bg-muted/20">
                     <div className="flex items-center gap-3">
-                      <div className="bg-amber-500/10 p-2 rounded-lg text-amber-500">
+                      <div className="bg-foreground/5 p-2 rounded-lg border border-foreground/10 group-hover:bg-foreground group-hover:text-background transition-colors">
                         <Zap className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="font-bold">{test.pcs?.name || test.pc_id}</p>
-                        <p className="text-[10px] text-muted-foreground">{formatDate(test.created_at)}</p>
+                        <p className="font-bold tracking-tight">{test.pcs?.name || test.pc_id}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase">{formatDate(test.created_at)}</p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-[10px] font-mono">TEST_RUN</Badge>
+                    <Badge variant="secondary" className="text-[10px] font-bold tracking-widest uppercase">Test Case</Badge>
                   </div>
                   <CardContent className="p-4 grid grid-cols-3 gap-8">
                     <div>
-                      <CardDescription className="text-xs flex items-center gap-1.5 mb-1 text-emerald-500">
-                        <Cpu className="w-3 h-3" /> CPU Load
-                      </CardDescription>
+                      <div className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-1">CPU Load</div>
                       <p className="font-black text-xl">{test.cpu.toFixed(1)}%</p>
                     </div>
                     <div>
-                      <CardDescription className="text-xs flex items-center gap-1.5 mb-1 text-blue-500">
-                        <HardDrive className="w-3 h-3" /> RAM Usage
-                      </CardDescription>
+                      <div className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-1">RAM GB</div>
                       <p className="font-black text-xl">{test.ram.toFixed(1)}GB</p>
                     </div>
                     <div>
-                      <CardDescription className="text-xs flex items-center gap-1.5 mb-1 text-amber-500">
-                        <Zap className="w-3 h-3" /> Disk Speed
-                      </CardDescription>
+                      <div className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-1">Disk Speed</div>
                       <p className="font-black text-xl">{test.disk_speed.toFixed(0)} MB/s</p>
                     </div>
                   </CardContent>
@@ -149,30 +143,30 @@ export default function HistoryClient({ testResults, logs, isAdmin }: HistoryCli
         </TabsContent>
 
         <TabsContent value="logs" className="mt-6">
-          <div className="rounded-xl border bg-card overflow-hidden">
+          <div className="rounded-xl border border-foreground/5 bg-muted/5 overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-muted/50 border-b">
+              <thead className="bg-muted/30 border-b border-foreground/5">
                 <tr>
-                  <th className="text-left p-4 font-semibold">Device</th>
-                  <th className="text-left p-4 font-semibold">CPU</th>
-                  <th className="text-left p-4 font-semibold">RAM</th>
-                  <th className="text-right p-4 font-semibold">Recorded At</th>
+                  <th className="text-left p-4 font-bold uppercase tracking-widest text-[10px] opacity-60">Device</th>
+                  <th className="text-left p-4 font-bold uppercase tracking-widest text-[10px] opacity-60">CPU</th>
+                  <th className="text-left p-4 font-bold uppercase tracking-widest text-[10px] opacity-60">RAM</th>
+                  <th className="text-right p-4 font-bold uppercase tracking-widest text-[10px] opacity-60">Recorded At</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-foreground/5">
                 {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="p-4 font-medium">{log.pcs?.name || log.pc_id}</td>
+                  <tr key={log.id} className="hover:bg-foreground/5 transition-colors group">
+                    <td className="p-4 font-semibold">{log.pcs?.name || log.pc_id}</td>
                     <td className="p-4">
                        <div className="flex items-center gap-2">
-                         <div className="flex-1 w-20 h-1.5 bg-muted rounded-full overflow-hidden">
-                           <div className="h-full bg-emerald-500" style={{ width: `${Math.min(log.cpu, 100)}%` }} />
+                         <div className="flex-1 w-20 h-1 bg-muted rounded-full overflow-hidden">
+                           <div className="h-full bg-foreground transition-all" style={{ width: `${Math.min(log.cpu, 100)}%` }} />
                          </div>
-                         <span className="font-mono text-xs w-8 text-right">{log.cpu.toFixed(0)}%</span>
+                         <span className="font-mono text-[10px] w-8 text-right opacity-60 group-hover:opacity-100">{log.cpu.toFixed(0)}%</span>
                        </div>
                     </td>
-                    <td className="p-4 font-mono text-xs">{log.ram.toFixed(1)} GB</td>
-                    <td className="p-4 text-right text-muted-foreground text-[11px]">{formatDate(log.created_at)}</td>
+                    <td className="p-4 font-mono text-xs opacity-60 group-hover:opacity-100">{log.ram.toFixed(1)} GB</td>
+                    <td className="p-4 text-right text-muted-foreground text-[10px] uppercase font-medium">{formatDate(log.created_at)}</td>
                   </tr>
                 ))}
                 {filteredLogs.length === 0 && (

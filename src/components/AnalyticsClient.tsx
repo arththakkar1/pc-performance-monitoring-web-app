@@ -75,36 +75,36 @@ export default function AnalyticsClient({ results, isAdmin }: AnalyticsClientPro
 
       {/* Aggregate Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-emerald-500/2 border-emerald-500/10">
+        <Card className="bg-muted/10 border-foreground/10">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase tracking-wider flex items-center gap-2">
-              <Cpu className="w-3 h-3 text-emerald-500" /> Avg CPU Load
+            <CardDescription className="text-xs uppercase tracking-wider flex items-center gap-2 text-foreground/70">
+              <Cpu className="w-3 h-3" /> Avg CPU Load
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black">{avgCpu.toFixed(1)}%</div>
+            <div className="text-3xl font-black tracking-tight">{avgCpu.toFixed(1)}%</div>
             <p className="text-[10px] text-muted-foreground mt-1">Across {filteredResults.length} data points</p>
           </CardContent>
         </Card>
-        <Card className="bg-blue-500/2 border-blue-500/10">
+        <Card className="bg-muted/10 border-foreground/10">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase tracking-wider flex items-center gap-2">
-              <HardDrive className="w-3 h-3 text-blue-500" /> Avg RAM Usage
+            <CardDescription className="text-xs uppercase tracking-wider flex items-center gap-2 text-foreground/70">
+              <HardDrive className="w-3 h-3" /> Avg RAM Usage
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black">{avgRam.toFixed(1)} GB</div>
+            <div className="text-3xl font-black tracking-tight">{avgRam.toFixed(1)} GB</div>
             <p className="text-[10px] text-muted-foreground mt-1">Total active memory</p>
           </CardContent>
         </Card>
-        <Card className="bg-amber-500/2 border-amber-500/10">
+        <Card className="bg-muted/10 border-foreground/10">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase tracking-wider flex items-center gap-2">
-              <Zap className="w-3 h-3 text-amber-500" /> Avg Disk Speed
+            <CardDescription className="text-xs uppercase tracking-wider flex items-center gap-2 text-foreground/70">
+              <Zap className="w-3 h-3" /> Avg Disk Speed
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black">{avgDisk.toFixed(0)} MB/s</div>
+            <div className="text-3xl font-black tracking-tight">{avgDisk.toFixed(0)} MB/s</div>
             <p className="text-[10px] text-muted-foreground mt-1">Read/Write performance</p>
           </CardContent>
         </Card>
@@ -112,39 +112,39 @@ export default function AnalyticsClient({ results, isAdmin }: AnalyticsClientPro
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card>
+        <Card className="border-foreground/5 bg-background shadow-none">
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-500" /> CPU & RAM Trends
+            <CardTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" /> CPU & RAM Trends
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
-                  <linearGradient id="colorCpu" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  <linearGradient id="colorWhite" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="currentColor" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="currentColor" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#88888820" />
                 <XAxis dataKey="time" hide />
-                <YAxis stroke="#888888" fontSize={12} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }}
-                  itemStyle={{ fontSize: '10px' }}
+                  contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                  itemStyle={{ fontSize: '10px', color: 'hsl(var(--foreground))' }}
                 />
-                <Area type="monotone" dataKey="cpu" stroke="#10b981" fillOpacity={1} fill="url(#colorCpu)" name="CPU %" />
-                <Area type="monotone" dataKey="ram" stroke="#3b82f6" fillOpacity={0} name="RAM GB" />
+                <Area type="monotone" dataKey="cpu" stroke="hsl(var(--foreground))" strokeWidth={2} fillOpacity={1} fill="url(#colorWhite)" name="CPU %" />
+                <Area type="monotone" dataKey="ram" stroke="hsl(var(--muted-foreground))" strokeWidth={2} strokeDasharray="4 4" fillOpacity={0} name="RAM GB" />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-foreground/5 bg-background shadow-none">
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500" /> Disk Speed History
+            <CardTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+              <Zap className="w-4 h-4" /> Disk Speed History
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
@@ -152,12 +152,12 @@ export default function AnalyticsClient({ results, isAdmin }: AnalyticsClientPro
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#88888820" />
                 <XAxis dataKey="time" hide />
-                <YAxis stroke="#888888" fontSize={12} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip 
-                   contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }}
-                   itemStyle={{ fontSize: '10px' }}
+                   contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                   itemStyle={{ fontSize: '10px', color: 'hsl(var(--foreground))' }}
                 />
-                <Bar dataKey="disk" fill="#f59e0b" radius={[4, 4, 0, 0]} name="MB/s" />
+                <Bar dataKey="disk" fill="hsl(var(--foreground))" radius={[2, 2, 0, 0]} name="MB/s" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -165,10 +165,10 @@ export default function AnalyticsClient({ results, isAdmin }: AnalyticsClientPro
       </div>
 
       {isAdmin && (
-        <Card>
+        <Card className="border-foreground/5 bg-background shadow-none">
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <LayoutPanelLeft className="w-4 h-4 text-purple-500" /> Device Distribution
+            <CardTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+              <LayoutPanelLeft className="w-4 h-4" /> Device Distribution
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
@@ -177,12 +177,13 @@ export default function AnalyticsClient({ results, isAdmin }: AnalyticsClientPro
                 name: pc.name,
                 avg: results.filter(r => r.pc_id === pc.id).reduce((s, r) => s + r.cpu, 0) / (results.filter(r => r.pc_id === pc.id).length || 1)
               }))}>
-                <XAxis dataKey="name" stroke="#888888" fontSize={10} />
-                <YAxis stroke="#888888" fontSize={12} />
+                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip 
-                   contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }}
+                   contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                   itemStyle={{ color: 'hsl(var(--foreground))' }}
                 />
-                <Bar dataKey="avg" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Avg CPU %" />
+                <Bar dataKey="avg" fill="hsl(var(--muted-foreground))" radius={[2, 2, 0, 0]} name="Avg CPU %" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

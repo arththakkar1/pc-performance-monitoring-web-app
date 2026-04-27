@@ -28,7 +28,7 @@ export default async function TopNav({ isAdmin = false }: TopNavProps) {
         {/* Left Side - Brand & Navigation */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-foreground/10 text-foreground border border-foreground/20">
               <div className="w-9 h-9 bg-black dark:bg-white rounded-lg flex items-center justify-center shrink-0 p-2 transition-colors">
                 <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-white dark:text-black">
                   <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
@@ -57,7 +57,7 @@ export default async function TopNav({ isAdmin = false }: TopNavProps) {
                 <span className="text-xs font-semibold text-foreground/90">{data.user.email}</span>
                 <div className="flex items-center gap-1 mt-0.5">
                   {isAdmin ? (
-                    <span className="flex items-center text-[9px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-sm uppercase tracking-widest border border-emerald-500/20">
+                    <span className="flex items-center text-[9px] font-bold bg-foreground text-background px-1.5 py-0.5 rounded-sm uppercase tracking-widest border border-foreground">
                       <ShieldCheck className="w-3 h-3 mr-0.5" /> Admin
                     </span>
                   ) : (
