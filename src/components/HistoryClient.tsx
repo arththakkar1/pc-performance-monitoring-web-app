@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { Card, CardContent, } from "./ui/card"
 import { Badge } from "./ui/badge"
-import { Cpu, HardDrive, Zap, Calendar } from 'lucide-react'
+import {  Zap, Calendar } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 
@@ -183,8 +183,4 @@ export default function HistoryClient({ testResults, logs, isAdmin }: HistoryCli
       </Tabs>
     </div>
   )
-}
-
-function CardDescription({ children, className }: any) {
-  return <div className={`text-muted-foreground ${className}`}>{children}</div>
 }

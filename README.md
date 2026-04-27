@@ -4,44 +4,75 @@ A centralized hardware performance monitoring platform and diagnostic dashboard.
 
 ## Primary Features
 
-### Demand-Driven Monitoring
+### 🚀 Demand-Driven Monitoring
 The application utilizes a local-first monitoring model that eliminates persistent background network traffic. Hardware metrics are retrieved on-demand by the client interface, significantly reducing server overhead and local resource consumption.
 
-### Local Telemetry Dashboard
-Real-time metrics for central processing units (CPU) and random-access memory (RAM) are fetched directly from the host system. This data is displayed locally to provide immediate feedback without unnecessary database persistence.
+### 📊 Local Telemetry Dashboard
+Real-time metrics for CPU and RAM are fetched directly from the host system via `systeminformation`. This data is displayed locally to provide immediate feedback without unnecessary database persistence.
 
-### Administrative Diagnostics
-Administrators possess the authorization to trigger full system diagnostic tests across the registered device fleet. These tests include disk input/output performance measurements and are persisted to the database for long-term reporting.
+### 🛡️ Administrative Diagnostics
+Administrators possess the authorization to trigger full system diagnostic tests across the registered device fleet. These tests include disk I/O performance measurements and are persisted to the database for long-term reporting.
 
-### Historical Performance Analytics
-The platform provides comprehensive visualization of performance trends. Charts are engineered to be theme-aware, utilizing dynamic color resolution to maintain legibility across both light and dark system color schemes.
+### 📈 Historical Performance Analytics
+The platform provides comprehensive visualization of performance trends using Recharts. Charts are theme-aware, utilizing dynamic color resolution to maintain legibility across both light and dark system color schemes.
 
-### Activity Logging and Auditing
-A dedicated history component provides searchable and filterable access to all previous diagnostic results and continuous telemetry logs. Data is organized by device classification and temporal ranges.
+### 📜 Activity Logging and Auditing
+A dedicated history component provides searchable and filterable access to all previous diagnostic results and continuous telemetry logs, organized by device and time range.
+
+## System Architecture & Workflow
+
+The system utilizes a **Client-Driven Passive Agent** model. Instead of a persistent background daemon, monitoring logic is integrated directly into the web interface, executed by the host machine's browser session.
+
+### Core Data Flow
+
+```mermaid
+sequenceDiagram
+    participant Admin
+    participant Supabase
+    participant TargetPC as Target PC (Browser)
+    participant Server as Next.js Server (systeminformation)
+
+    Note over TargetPC, Server: Live Monitoring (On-Demand)
+    TargetPC->>Server: invoke getLiveMetrics()
+    Server->>Server: si.mem(), si.currentLoad()
+    Server-->>TargetPC: Real-time Telemetry Data
+
+    Note over Admin, TargetPC: Remote Diagnostics (Command Loop)
+    Admin->>Supabase: Insert START_TEST into 'commands'
+    Supabase-->>TargetPC: Realtime Update Notification
+    TargetPC->>Server: invoke runManualTest()
+    Server->>Server: si.fsStats() + si.mem() + si.currentLoad()
+    Server->>Supabase: Insert results into 'test_results' & 'logs'
+    Supabase-->>Admin: Realtime UI Update (Charts & Logs)
+```
+
+### 1. Live Telemetry (Ephemeral)
+When a user views their own device, the browser establishes a polling loop (via Server Actions) to fetch immediate hardware state. This data is displayed locally and is **not persisted** to the database, minimizing storage costs and network overhead.
+
+### 2. Administrative Control Loop (Persistent)
+Administrators can trigger remote diagnostics. This follows an asynchronous command pattern:
+- **Command Issuance**: Admin inserts a record into the `commands` table.
+- **Realtime Dispatch**: Supabase broadcasts the event to the target device's active session.
+- **Local Execution**: The target device executes a privileged Server Action (`runManualTest`).
+- **Result Persistence**: The hardware results are saved back to Supabase for historical auditing and group analytics.
 
 ## Technical Specification
 
 - **Core Framework**: Next.js 16 (App Router)
-- **Data Architecture**: Supabase (PostgreSQL, Authentication, Realtime)
+- **Data Architecture**: Supabase (PostgreSQL, Realtime, RLS)
+- **Hardware Telemetry**: `systeminformation` (Node.js)
 - **Visualization**: Recharts (Dynamic SVG Rendering)
-- **Typography and UI**: High-contrast monochromatic design system
-
-## Operational Architecture
-
-The system operates on a client-driven synchronization model:
-1. **Host Discovery**: Devices are uniquely identified and registered within the Supabase ecosystem.
-2. **On-Demand Retrieval**: The user interface invokes server actions to gather system-level metrics via the `systeminformation` library.
-3. **Persistence Logic**: Database write operations are reserved for formal diagnostic events and administrator-requested sessions.
-4. **Theme Synchronization**: UI components utilize CSS variables and hook-based theme detection for consistent visual fidelity.
+- **Styling**: Tailwind CSS 4.0 with Shadcn UI components
+- **CI/CD**: GitHub Actions (Linting & Automated Builds)
 
 ## Deployment and Installation
 
 ### Prerequisites
-- Node.js runtime environment (LTS version)
-- Active Supabase project instance
+- Node.js 20+ runtime environment
+- Active Supabase project instance with Realtime enabled for `pcs`, `logs`, `commands`, and `test_results` tables.
 
 ### Configuration
-A `.env` file must be provisioned in the root directory with the following parameters:
+A `.env` file must be provisioned in the root directory:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_key
@@ -54,17 +85,14 @@ npm install
 npm run dev
 ```
 
-## System Workflows
-
-### Standard User Procedures
-- Device registration and configuration.
-- Real-time local metric monitoring.
-- Personal diagnostic history review and analytics.
-
-### Administrator Procedures
-- Global device fleet oversight.
-- Execution of remote diagnostic protocols.
-- Comparative system analytics across the infrastructure.
+## Continuous Integration
+The project includes a GitHub Actions workflow (`ci.yml`) that automatically:
+1. Checks out the source code.
+2. Sets up the Node.js environment.
+3. Installs dependencies and caches them.
+4. Performs linting across the codebase.
+5. Validates the production build.
 
 ## License
 MIT License
+
