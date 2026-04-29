@@ -23,7 +23,7 @@ export function ThemeToggle() {
       {/* Dynamic pill slider */}
       <div 
         className={cn(
-          "absolute h-6 w-8 rounded-full bg-background shadow-md transition-all duration-300 ease-out",
+          "absolute h-6 w-8 rounded-full bg-background shadow-md transition-all duration-300 ease-out dark:bg-muted dark:shadow-[0px_2px_8px_rgba(0,0,0,0.8)]",
           theme === "light" ? "translate-x-0" : theme === "dark" ? "translate-x-8" : "translate-x-16"
         )}
       />

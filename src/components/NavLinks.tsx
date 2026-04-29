@@ -13,8 +13,8 @@ export default function NavLinks({ isAdmin }: { isAdmin: boolean }) {
       <Link 
         href="/" 
         className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-all hover:bg-background hover:shadow-sm hover:text-foreground",
-          pathname === "/" ? "bg-background shadow-sm text-foreground" : "text-foreground/70"
+          "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-all hover:bg-background hover:shadow-sm hover:text-foreground dark:hover:bg-muted dark:hover:shadow-[0px_2px_8px_rgba(0,0,0,0.8)]",
+          pathname === "/" ? "bg-background shadow-sm text-foreground dark:bg-muted dark:shadow-[0px_2px_8px_rgba(0,0,0,0.8)]" : "text-foreground/70"
         )}
       >
          <LayoutDashboard className="w-4 h-4" />
@@ -23,8 +23,8 @@ export default function NavLinks({ isAdmin }: { isAdmin: boolean }) {
       <Link 
         href="/analytics" 
         className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-all hover:bg-background hover:shadow-sm hover:text-foreground",
-          pathname === "/analytics" ? "bg-background shadow-sm text-foreground" : "text-foreground/70"
+          "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-all hover:bg-background hover:shadow-sm hover:text-foreground dark:hover:bg-muted dark:hover:shadow-[0px_2px_8px_rgba(0,0,0,0.8)]",
+          pathname === "/analytics" ? "bg-background shadow-sm text-foreground dark:bg-muted dark:shadow-[0px_2px_8px_rgba(0,0,0,0.8)]" : "text-foreground/70"
         )}
       >
          <LayoutDashboard className="w-4 h-4" />
@@ -33,8 +33,8 @@ export default function NavLinks({ isAdmin }: { isAdmin: boolean }) {
       <Link 
         href="/history" 
         className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-all hover:bg-background hover:shadow-sm hover:text-foreground",
-          pathname === "/history" ? "bg-background shadow-sm text-foreground" : "text-foreground/70"
+          "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-all hover:bg-background hover:shadow-sm hover:text-foreground dark:hover:bg-muted dark:hover:shadow-[0px_2px_8px_rgba(0,0,0,0.8)]",
+          pathname === "/history" ? "bg-background shadow-sm text-foreground dark:bg-muted dark:shadow-[0px_2px_8px_rgba(0,0,0,0.8)]" : "text-foreground/70"
         )}
       >
          <LayoutDashboard className="w-4 h-4" />
@@ -44,8 +44,8 @@ export default function NavLinks({ isAdmin }: { isAdmin: boolean }) {
         <Link 
           href="/results" 
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-all hover:bg-background hover:shadow-sm hover:text-foreground",
-            pathname === "/results" ? "bg-background shadow-sm text-foreground" : "text-foreground/70"
+            "flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-all hover:bg-background hover:shadow-sm hover:text-foreground dark:hover:bg-muted dark:hover:shadow-[0px_2px_8px_rgba(0,0,0,0.8)]",
+            pathname === "/results" ? "bg-background shadow-sm text-foreground dark:bg-muted dark:shadow-[0px_2px_8px_rgba(0,0,0,0.8)]" : "text-foreground/70"
           )}
         >
           <SearchCode className="w-4 h-4" />
