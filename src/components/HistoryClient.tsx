@@ -18,6 +18,9 @@ interface HistoryRecord {
   created_at: string;
   pc_id: string;
   pcs?: { name: string };
+  cpu: number;
+  ram: number;
+  disk_speed: number;
 }
 
 interface HistoryClientProps {
@@ -131,7 +134,7 @@ export default function HistoryClient({
       </div>
 
       <Tabs defaultValue="tests" className="w-full">
-        <TabsList className="grid w-full md:w-[400px] grid-cols-2">
+        <TabsList className="grid w-full md:w-100 grid-cols-2">
           <TabsTrigger value="tests">Diagnostic Tests</TabsTrigger>
           <TabsTrigger value="logs">Continuous Logs</TabsTrigger>
         </TabsList>
