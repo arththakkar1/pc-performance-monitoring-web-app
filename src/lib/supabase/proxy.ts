@@ -47,9 +47,20 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/auth') &&
     !isApiRequest
   ) {
-    // no user, potentially respond by redirecting the user to the login page
+    // no user — redirect to login
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
+  const isAuthPage =
+    request.nextUrl.pathname.startsWith('/login') ||
+    request.nextUrl.pathname.startsWith('/register')
+
+  if (user && isAuthPage) {
+    // already logged in — redirect away from auth pages to dashboard
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
     return NextResponse.redirect(url)
   }
 
