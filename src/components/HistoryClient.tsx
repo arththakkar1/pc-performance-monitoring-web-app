@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Zap, Calendar } from "lucide-react";
+import { Zap, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Button } from "./ui/button";
 
 interface HistoryRecord {
   id: string;
@@ -29,6 +30,93 @@ interface HistoryClientProps {
   isAdmin: boolean;
 }
 
+const TESTS_PER_PAGE = 8;
+const LOGS_PER_PAGE = 15;
+
+// ─── Pagination bar ───────────────────────────────────────────────────────────
+function PaginationBar({
+  currentPage,
+  totalPages,
+  onPage,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPage: (p: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  // Build page number buttons (show at most 5 around current)
+  const range = (from: number, to: number) =>
+    Array.from({ length: to - from + 1 }, (_, i) => from + i);
+
+  let pages: (number | "…")[] = [];
+  if (totalPages <= 7) {
+    pages = range(1, totalPages);
+  } else {
+    const left = Math.max(2, currentPage - 1);
+    const right = Math.min(totalPages - 1, currentPage + 1);
+    pages = [1];
+    if (left > 2) pages.push("…");
+    pages.push(...range(left, right));
+    if (right < totalPages - 1) pages.push("…");
+    pages.push(totalPages);
+  }
+
+  return (
+    <div className="flex items-center justify-between mt-6">
+      <p className="text-xs text-muted-foreground">
+        Page {currentPage} of {totalPages}
+      </p>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
+          disabled={currentPage === 1}
+          onClick={() => onPage(currentPage - 1)}
+          aria-label="Previous page"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+
+        {pages.map((p, i) =>
+          p === "…" ? (
+            <span
+              key={`ellipsis-${i}`}
+              className="px-1 text-muted-foreground text-sm"
+            >
+              …
+            </span>
+          ) : (
+            <Button
+              key={p}
+              variant={p === currentPage ? "default" : "outline"}
+              size="icon"
+              className="h-8 w-8 text-xs"
+              onClick={() => onPage(p as number)}
+              aria-label={`Page ${p}`}
+            >
+              {p}
+            </Button>
+          ),
+        )}
+
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
+          disabled={currentPage === totalPages}
+          onClick={() => onPage(currentPage + 1)}
+          aria-label="Next page"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 export default function HistoryClient({
   testResults,
   logs,
@@ -37,6 +125,16 @@ export default function HistoryClient({
   const [dateFilter, setDateFilter] = useState("all");
   const [classFilter, setClassFilter] = useState("all");
   const [mounted] = useState(true);
+
+  // Separate page state for each tab
+  const [testsPage, setTestsPage] = useState(1);
+  const [logsPage, setLogsPage] = useState(1);
+
+  // Reset pages whenever filters change
+  useEffect(() => {
+    setTestsPage(1);
+    setLogsPage(1);
+  }, [dateFilter, classFilter]);
 
   const filterByDate = (date: string) => {
     if (dateFilter === "all") return true;
@@ -66,6 +164,25 @@ export default function HistoryClient({
   );
   const filteredLogs = logs.filter(
     (r) => filterByDate(r.created_at) && filterByClass(r),
+  );
+
+  // Pagination slices
+  const totalTestsPages = Math.max(
+    1,
+    Math.ceil(filteredTests.length / TESTS_PER_PAGE),
+  );
+  const totalLogsPages = Math.max(
+    1,
+    Math.ceil(filteredLogs.length / LOGS_PER_PAGE),
+  );
+
+  const pagedTests = filteredTests.slice(
+    (testsPage - 1) * TESTS_PER_PAGE,
+    testsPage * TESTS_PER_PAGE,
+  );
+  const pagedLogs = filteredLogs.slice(
+    (logsPage - 1) * LOGS_PER_PAGE,
+    logsPage * LOGS_PER_PAGE,
   );
 
   // Unique PCs for 'Class' filter
@@ -135,10 +252,25 @@ export default function HistoryClient({
 
       <Tabs defaultValue="tests" className="w-full">
         <TabsList className="grid w-full md:w-100 grid-cols-2">
-          <TabsTrigger value="tests">Diagnostic Tests</TabsTrigger>
-          <TabsTrigger value="logs">Continuous Logs</TabsTrigger>
+          <TabsTrigger value="tests">
+            Diagnostic Tests
+            {filteredTests.length > 0 && (
+              <span className="ml-2 text-[10px] font-mono opacity-60">
+                ({filteredTests.length})
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="logs">
+            Continuous Logs
+            {filteredLogs.length > 0 && (
+              <span className="ml-2 text-[10px] font-mono opacity-60">
+                ({filteredLogs.length})
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
 
+        {/* ── Diagnostic Tests tab ──────────────────────────── */}
         <TabsContent value="tests" className="mt-6">
           <div className="grid grid-cols-1 gap-4">
             {filteredTests.length === 0 ? (
@@ -147,7 +279,7 @@ export default function HistoryClient({
                 <p>No test results found.</p>
               </div>
             ) : (
-              filteredTests.map((test) => (
+              pagedTests.map((test) => (
                 <Card
                   key={test.id}
                   className="overflow-hidden border-foreground/5 shadow-none group"
@@ -203,8 +335,15 @@ export default function HistoryClient({
               ))
             )}
           </div>
+
+          <PaginationBar
+            currentPage={testsPage}
+            totalPages={totalTestsPages}
+            onPage={setTestsPage}
+          />
         </TabsContent>
 
+        {/* ── Continuous Logs tab ───────────────────────────── */}
         <TabsContent value="logs" className="mt-6">
           <div className="rounded-xl border border-foreground/5 bg-muted/5 overflow-hidden">
             <table className="w-full text-sm">
@@ -225,7 +364,7 @@ export default function HistoryClient({
                 </tr>
               </thead>
               <tbody className="divide-y divide-foreground/5">
-                {filteredLogs.map((log) => (
+                {pagedLogs.map((log) => (
                   <tr
                     key={log.id}
                     className="hover:bg-foreground/5 transition-colors group"
@@ -267,6 +406,12 @@ export default function HistoryClient({
               </tbody>
             </table>
           </div>
+
+          <PaginationBar
+            currentPage={logsPage}
+            totalPages={totalLogsPages}
+            onPage={setLogsPage}
+          />
         </TabsContent>
       </Tabs>
     </div>

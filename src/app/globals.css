@@ -127,6 +127,25 @@
   html {
     @apply font-sans;
   }
+
+  /* Apply pointer cursor to all clickable/interactive elements */
+  button,
+  a,
+  select,
+  label[for],
+  [role="button"],
+  [role="link"],
+  [role="menuitem"],
+  [role="option"],
+  [role="tab"],
+  [role="checkbox"],
+  [role="radio"],
+  [role="switch"],
+  [role="combobox"],
+  [tabindex]:not([tabindex="-1"]),
+  summary {
+    cursor: pointer;
+  }
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
