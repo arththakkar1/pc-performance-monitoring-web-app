@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Zap, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
@@ -130,11 +130,17 @@ export default function HistoryClient({
   const [testsPage, setTestsPage] = useState(1);
   const [logsPage, setLogsPage] = useState(1);
 
-  // Reset pages whenever filters change
-  useEffect(() => {
+  const handleDateFilterChange = (value: string) => {
+    setDateFilter(value);
     setTestsPage(1);
     setLogsPage(1);
-  }, [dateFilter, classFilter]);
+  };
+
+  const handleClassFilterChange = (value: string) => {
+    setClassFilter(value);
+    setTestsPage(1);
+    setLogsPage(1);
+  };
 
   const filterByDate = (date: string) => {
     if (dateFilter === "all") return true;
@@ -220,8 +226,8 @@ export default function HistoryClient({
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <Select onValueChange={setDateFilter} defaultValue="all">
-            <SelectTrigger className="w-full md:w-[160px] h-9 text-xs">
+          <Select onValueChange={handleDateFilterChange} defaultValue="all">
+            <SelectTrigger className="w-full md:w-40 h-9 text-xs">
               <SelectValue placeholder="Filter by Date" />
             </SelectTrigger>
             <SelectContent>
@@ -233,8 +239,8 @@ export default function HistoryClient({
           </Select>
 
           {isAdmin && (
-            <Select onValueChange={setClassFilter} defaultValue="all">
-              <SelectTrigger className="w-full md:w-[160px] h-9 text-xs font-mono">
+            <Select onValueChange={handleClassFilterChange} defaultValue="all">
+              <SelectTrigger className="w-full md:w-40 h-9 text-xs font-mono">
                 <SelectValue placeholder="Filter by Class" />
               </SelectTrigger>
               <SelectContent>
