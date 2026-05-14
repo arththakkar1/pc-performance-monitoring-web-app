@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" rx="30" fill="#0f172a" />
+  <rect x="60" y="60" width="1080" height="580" rx="24" fill="#0f172a" stroke="#334155" stroke-width="2" />
+  <text x="100" y="120" fill="#f8fafc" font-family="Inter, sans-serif" font-size="42" font-weight="700">History & Logs</text>
+  <rect x="100" y="160" width="460" height="420" rx="20" fill="#1e293b" />
+  <text x="120" y="200" fill="#94a3b8" font-family="Inter, sans-serif" font-size="20">Filtered activity results</text>
+  <g fill="#64748b">
+    <rect x="120" y="240" width="380" height="18" rx="9" />
+    <rect x="120" y="280" width="330" height="18" rx="9" />
+    <rect x="120" y="320" width="360" height="18" rx="9" />
+    <rect x="120" y="360" width="310" height="18" rx="9" />
+    <rect x="120" y="400" width="370" height="18" rx="9" />
+  </g>
+  <rect x="600" y="160" width="520" height="420" rx="20" fill="#1e293b" />
+  <text x="620" y="200" fill="#94a3b8" font-family="Inter, sans-serif" font-size="20">Pagination and table view</text>
+  <rect x="620" y="240" width="440" height="40" rx="12" fill="#0f172a" />
+  <text x="640" y="270" fill="#f8fafc" font-family="Inter, sans-serif" font-size="18">Device Name</text>
+  <text x="900" y="270" fill="#f8fafc" font-family="Inter, sans-serif" font-size="18">CPU</text>
+  <rect x="620" y="310" width="440" height="16" rx="8" fill="#334155" />
+  <rect x="620" y="346" width="440" height="16" rx="8" fill="#334155" />
+  <rect x="620" y="382" width="440" height="16" rx="8" fill="#334155" />
+  <rect x="620" y="418" width="440" height="16" rx="8" fill="#334155" />
+  <g fill="#f8fafc">
+    <rect x="620" y="310" width="280" height="16" rx="8" />
+    <rect x="620" y="346" width="340" height="16" rx="8" />
+    <rect x="620" y="382" width="260" height="16" rx="8" />
+    <rect x="620" y="418" width="220" height="16" rx="8" />
+  </g>
+  <rect x="620" y="520" width="440" height="60" rx="16" fill="#0f172a" />
+  <text x="640" y="555" fill="#f8fafc" font-family="Inter, sans-serif" font-size="18">Page 1 of 4</text>
+</svg>
