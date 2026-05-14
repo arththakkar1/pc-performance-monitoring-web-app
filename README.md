@@ -26,11 +26,17 @@ A dedicated history component provides searchable and filterable access to all p
 
 ## Screenshots
 
-![Performance Dashboard](public/screenshots/dashboard.svg)
-_Live telemetry dashboard with diagnostic summary cards._
+### Dark Mode
 
-![History Activity](public/screenshots/history.svg)
-_Filtered activity history view with pagination and log table._
+![Dashboard Dark Mode](public/screenshots/Dark/Dark-1.png)
+![History Dark Mode](public/screenshots/Dark/Dark-2.png)
+
+### Light Mode
+
+![Dashboard Light Mode](public/screenshots/Light/Light-1.png)
+![History Light Mode](public/screenshots/Light/Light-2.png)
+
+Additional screenshots are available in `public/screenshots/Dark` and `public/screenshots/Light`.
 
 ## System Architecture & Workflow
 
