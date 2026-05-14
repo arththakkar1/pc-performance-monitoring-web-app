@@ -29,12 +29,12 @@ A dedicated history component provides searchable and filterable access to all p
 ### Dark Mode
 
 ![Dashboard Dark Mode](public/screenshots/Dark/Dark-1.png)
-![History Dark Mode](public/screenshots/Dark/Dark-2.png)
+![History Dark Mode](public/screenshots/Dark/Dark-3.png)
 
 ### Light Mode
 
 ![Dashboard Light Mode](public/screenshots/Light/Light-1.png)
-![History Light Mode](public/screenshots/Light/Light-2.png)
+![History Light Mode](public/screenshots/Light/Light-3.png)
 
 Additional screenshots are available in `public/screenshots/Dark` and `public/screenshots/Light`.
 
