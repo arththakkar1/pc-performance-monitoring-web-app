@@ -30,7 +30,7 @@ Once registered, you are dropped into the main **Dashboard**.
 
 Watch the circular gauges for CPU and RAM. You should see them ticking up and down every few seconds.
 
-![Live Telemetry Dashboard](../public/screenshots/Dark/Dark-1.png)
+![Live Telemetry Dashboard](./../../public/screenshots/Dark/Dark-3.png)
 
 - Try opening a heavy application or running a build script in the background. You will see the CPU gauge instantly reflect the system load.
 - _Note: This telemetry is ephemeral. It is flowing from your operating system, through Next.js Server Actions, directly into the React UI. It is not bloating your database._
@@ -46,6 +46,6 @@ Now let's simulate an Administrator running a heavy diagnostic test remotely.
 5. Behind the scenes, the system just wrote an event to the database, which bounced back to your browser session, triggering an intense hardware scan.
 6. Navigate to the **Results** or **History** tab using the top nav. You will see a brand new log entry containing CPU, RAM, and Disk Speed metrics.
 
-![History and Results View](../public/screenshots/Dark/Dark-3.png)
+![History and Results View](./../../public/screenshots/Dark/Dark-7.png)
 
 You've successfully completed the onboarding loop! You can now access this URL from any other computer, register it, and use this central dashboard to run tests on all of them.
