@@ -1,28 +1,51 @@
-# Getting Started with the Monitoring System
+# Tutorial: Getting Started with PC Monitoring
 
-This tutorial will show you how to register your first device and monitor its performance in real-time.
+This tutorial is an onboarding guide to get you up and running with the PC Performance Monitoring System. By the end of this tutorial, you will have registered your current machine and executed a remote diagnostic test on it.
 
-## 1. Register an Account
-Navigate to the root URL of your deployed application (or `http://localhost:3000` if running locally). 
-- You will be presented with a login/registration screen.
-- Create a new account using your email and a secure password.
+## Step 1: Create an Account
 
-## 2. Register Your Device
-Upon logging in, the system will detect that you are on a new device that hasn't been registered yet.
-- You will be prompted to enter a "Display Name" for the current computer (e.g., "Main Workstation").
-- Once submitted, the device is added to your fleet and associated with your user account.
+1. Navigate to your application's base URL (e.g., `http://localhost:3000`).
+2. You will see the Login/Registration portal. 
+3. Switch to the **Register** tab and enter a valid email and password.
+4. Click **Create Account**.
 
-## 3. View Live Telemetry
-After registration, you will be redirected to the **Dashboard**.
-- **The Magic of the Dashboard**: Without downloading any separate software, the dashboard will immediately begin displaying real-time gauges for your CPU and RAM usage. 
-- This data is fetched directly from your machine using your browser session and is purely ephemeral (not saved to the database).
+![Login and Registration View](../public/screenshots/Dark/Dark-6.png)
 
-## 4. Run a Remote Diagnostic Test
-To test the command pipeline:
-1. Navigate to the **Admin Dashboard** (or Fleet view).
-2. You will see your registered device in the list.
-3. Click the "Run Test" or "Start Diagnostic" button next to your device.
-4. The system will issue a command via Supabase Realtime. Your own browser session will pick up this command, execute an intensive diagnostic check (including disk speed), and save the result.
-5. You can view the output of this test in the **Results** or **History** tabs.
+*Behind the scenes*: This leverages Supabase Auth to create a secure session.
 
-Congratulations! You have successfully registered a device and executed a remote diagnostic test.
+## Step 2: Register Your First Device
+
+Because the application uses a **Client-Driven Passive Agent** model, your browser acts as the monitoring agent. 
+
+1. Immediately after logging in, the application will detect that your current machine is unknown to the database.
+2. A prompt will appear asking you to name the device.
+3. Type in a recognizable name, such as `"MacBook Pro - Work"`.
+4. Click **Register Device**.
+
+Your device's hostname and hardware profile are now linked to your user account in the `pcs` table.
+
+## Step 3: Observe Live Telemetry
+
+Once registered, you are dropped into the main **Dashboard**.
+
+Watch the circular gauges for CPU and RAM. You should see them ticking up and down every few seconds. 
+
+![Live Telemetry Dashboard](../public/screenshots/Dark/Dark-1.png)
+
+- Try opening a heavy application or running a build script in the background. You will see the CPU gauge instantly reflect the system load.
+- *Note: This telemetry is ephemeral. It is flowing from your operating system, through Next.js Server Actions, directly into the React UI. It is not bloating your database.*
+
+## Step 4: Run a Diagnostic Test
+
+Now let's simulate an Administrator running a heavy diagnostic test remotely.
+
+1. Using the top navigation bar, click on **Admin Dashboard** (or the **Fleet** view).
+2. You will see a table listing all registered devices. Your newly registered device will be listed with an `"online"` status.
+3. Locate the **Action** column next to your device and click **Run Test**.
+4. You will see a small toast notification indicating the command was dispatched.
+5. Behind the scenes, the system just wrote an event to the database, which bounced back to your browser session, triggering an intense hardware scan.
+6. Navigate to the **Results** or **History** tab using the top nav. You will see a brand new log entry containing CPU, RAM, and Disk Speed metrics. 
+
+![History and Results View](../public/screenshots/Dark/Dark-3.png)
+
+You've successfully completed the onboarding loop! You can now access this URL from any other computer, register it, and use this central dashboard to run tests on all of them.

@@ -1,42 +1,66 @@
-# How to Run the System Locally
+# How to Run the System Locally (Runbook)
 
-This guide will walk you through setting up and running the PC Performance Monitoring System on your local machine for development or testing.
+This guide provides step-by-step instructions for getting the system running locally. 
 
 ## Prerequisites
 
-- **Node.js**: Version 20 or higher is required.
-- **Supabase**: You must have an active Supabase project instance.
+- **Node.js**: `v20.x` or higher.
+- **Git**: To clone the repository.
+- **Supabase Account**: A free-tier Supabase project is sufficient.
 
-## Step 1: Configure Supabase Database
-Your Supabase project requires a specific schema and Realtime configurations.
-1. Go to your Supabase project dashboard.
-2. Navigate to the SQL Editor.
-3. Copy the contents of `supabase/schema.sql` from this repository and run it. This will create the `pcs`, `logs`, `test_results`, and `commands` tables, and enable Realtime for them.
+---
 
-## Step 2: Environment Variables
-Create a `.env` file in the root directory of the repository and populate it with your Supabase credentials:
+## Step-by-Step Procedure
+
+### 1. Setup Supabase Project
+1. Create a new project on [Supabase](https://supabase.com/).
+2. Navigate to the **SQL Editor** in your Supabase dashboard.
+3. Copy the entire contents of `supabase/schema.sql` from this repository.
+4. Paste it into the SQL Editor and click **Run**. This will create the required tables and configure Row Level Security (RLS) and Realtime publications.
+
+### 2. Configure Environment Variables
+In the root directory of your cloned repository, create a `.env` file. You need to provide your Supabase connection strings.
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+# Find these in Supabase Dashboard -> Project Settings -> API
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project-id>.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<your-anon-public-key>
+
+# Required for Next.js to properly execute systeminformation
 NEXT_RUNTIME=nodejs
 ```
 
-## Step 3: Install Dependencies
-Open your terminal in the project root and install the required NPM packages:
-
+### 3. Install NPM Dependencies
+Use npm to install the Next.js, Shadcn, and Supabase dependencies.
 ```bash
 npm install
 ```
 
-## Step 4: Start the Development Server
-Run the Next.js development server:
-
+### 4. Start the Application
+Boot the Next.js development server:
 ```bash
 npm run dev
 ```
 
-## Step 5: Access the Application
-Open your browser and navigate to `http://localhost:3000`. 
-- Since you are running it locally, the device you open it on will be the device being monitored.
-- You can register an account, and the current machine will be added to your fleet.
+### 5. Access the Platform
+Navigate to `http://localhost:3000` in your web browser. 
+
+---
+
+## Troubleshooting & Escalation
+
+### Issue: Hardware stats are returning `null` or crashing
+- **Cause**: The `systeminformation` library requires native OS APIs. It may fail if running in an isolated Docker container without hardware privileges or on an unsupported OS.
+- **Fix**: Ensure you are running `npm run dev` directly on your host machine (Windows, macOS, or Linux), not inside an Alpine-based Docker container or restricted sandbox.
+
+### Issue: Remote tests are not triggering
+- **Cause**: Supabase Realtime is not enabled for the `commands` table.
+- **Fix**: Re-run the bottom section of `supabase/schema.sql` which drops and recreates the `supabase_realtime` publication:
+  ```sql
+  BEGIN;
+    DROP PUBLICATION IF EXISTS supabase_realtime;
+    CREATE PUBLICATION supabase_realtime;
+  COMMIT;
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.pcs;
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.commands;
+  ```
