@@ -30,6 +30,6 @@ Please refer to our **[`doc/` directory](doc/README.md)** for comprehensive guid
 ![Dashboard Light Mode](public/screenshots/Light/Light-1.png)
 ![History Light Mode](public/screenshots/Light/Light-3.png)
 
-## Licensesldfhj
+## Licenses
 
 MIT License
